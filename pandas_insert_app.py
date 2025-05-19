@@ -149,15 +149,6 @@ try:
         styled_df = highlight_new_column(modified_df, column_name)
         st.dataframe(styled_df, use_container_width=True)
     
-    # Visual explanation of what changed
-    st.markdown(f"""
-    <div style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 20px;">
-        <h3 style="color: #333;">What Changed?</h3>
-        <p>New column "<strong>{column_name}</strong>" was inserted at position <strong>{loc}</strong> 
-        {f'(between columns "{modified_df.columns[loc-1]}" and "{modified_df.columns[loc+1]}")' if 0 < loc < len(modified_df.columns)-1 else f'({"at the beginning" if loc == 0 else "at the end"})'}
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
     
     # Show code example
     st.subheader("Code")
