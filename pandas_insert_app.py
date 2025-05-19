@@ -81,11 +81,59 @@ with st.sidebar:
                                   value=False, 
                                   help="Allow duplicate column names")
 
+    st.markdown("---")
+    st.markdown("""
+    #### Visual Settings
+    """)
+    highlight_color = st.color_picker("Highlight color for new column", value="#ffff00")
+    highlight_opacity = st.slider("Highlight opacity", min_value=0.1, max_value=1.0, value=0.3, step=0.1)
+
+# Function to style the dataframes 
+def highlight_new_column(df_styled, column_name):
+    # Convert hex color to rgba
+    hex_color = highlight_color.lstrip('#')
+    rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    rgba = f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, {highlight_opacity})"
+    
+    return df_styled.style.set_properties(
+        subset=[column_name],
+        **{'background-color': rgba, 'font-weight': 'bold'}
+    )
+
+# Add visual borders to distinguish dataframes
+original_container_style = """
+<style>
+div[data-testid="stDataFrame"] {
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+}
+div.stDataFrame > div {
+    margin-bottom: 0;
+}
+</style>
+"""
+
+modified_container_style = """
+<style>
+div[data-testid="stDataFrame"] {
+    border: 2px solid #4e8df5;
+    border-radius: 5px;
+    padding: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+div.stDataFrame > div {
+    margin-bottom: 0;
+}
+</style>
+"""
+
 # Main content area - split into two columns
 col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Original DataFrame")
+    st.markdown(original_container_style, unsafe_allow_html=True)
     st.dataframe(df, use_container_width=True)
 
 # Create and display modified dataframe
@@ -95,7 +143,21 @@ try:
     
     with col2:
         st.subheader("Modified DataFrame")
-        st.dataframe(modified_df, use_container_width=True)
+        st.markdown(modified_container_style, unsafe_allow_html=True)
+        
+        # Apply styling to highlight the new column
+        styled_df = highlight_new_column(modified_df, column_name)
+        st.dataframe(styled_df, use_container_width=True)
+    
+    # Visual explanation of what changed
+    st.markdown(f"""
+    <div style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 20px;">
+        <h3 style="color: #333;">What Changed?</h3>
+        <p>New column "<strong>{column_name}</strong>" was inserted at position <strong>{loc}</strong> 
+        {f'(between columns "{modified_df.columns[loc-1]}" and "{modified_df.columns[loc+1]}")' if 0 < loc < len(modified_df.columns)-1 else f'({"at the beginning" if loc == 0 else "at the end"})'}
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Show code example
     st.subheader("Code")
